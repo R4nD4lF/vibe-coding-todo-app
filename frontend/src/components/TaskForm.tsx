@@ -8,6 +8,7 @@ interface TaskFormProps {
     name: string;
     description: string;
     tag_ids: number[];
+    due_date?: string | null;
   }) => Promise<void>;
   onCancel: () => void;
   onCreateTag: (tagData: TagCreateData) => Promise<TagType>;
@@ -34,12 +35,28 @@ export default function TaskForm({
       ? initialData.tags?.map((tag) => tag.id) || []
       : [],
   );
+  const [dueDateLocal, setDueDateLocal] = useState<string>(
+    mode === "edit" && initialData && initialData.due_date
+      ? new Date(initialData.due_date).getTime()
+        ? new Date(
+            new Date(initialData.due_date).getTime() -
+              new Date(initialData.due_date).getTimezoneOffset() * 60000,
+          )
+            .toISOString()
+            .slice(0, 16)
+        : ""
+      : "",
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    await onSubmit({ name, description, tag_ids: selectedTagIds });
+    const due_date = dueDateLocal
+      ? new Date(dueDateLocal).toISOString()
+      : undefined;
+
+    await onSubmit({ name, description, tag_ids: selectedTagIds, due_date });
 
     // Reset form
     setName("");

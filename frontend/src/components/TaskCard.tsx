@@ -14,6 +14,31 @@ export default function TaskCard({
   onEdit,
   onDragStart,
 }: TaskCardProps) {
+  const renderDueIndicator = () => {
+    if (!item.due_date) return null;
+
+    const due = new Date(item.due_date).getTime();
+    const now = Date.now();
+    const diff = due - now;
+    const hours48 = 48 * 60 * 60 * 1000;
+
+    let color = "bg-slate-300"; // neutral
+    let title = `Due ${new Date(item.due_date).toISOString()}`;
+    if (diff < 0) {
+      color = "bg-rose-500";
+      title = `Overdue — ${new Date(item.due_date).toISOString()}`;
+    } else if (diff <= hours48) {
+      color = "bg-amber-500";
+      title = `Due soon — ${new Date(item.due_date).toISOString()}`;
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <span className={`inline-block h-2 w-2 rounded-full ${color}`} title={title} />
+        <span className="text-xs text-slate-500">{new Date(item.due_date).toISOString().slice(0,16) + "Z"}</span>
+      </div>
+    );
+  };
   return (
     <article
       data-testid={`task-${item.id}`}
@@ -27,6 +52,7 @@ export default function TaskCard({
           {item.description && (
             <p className="mt-1 text-xs text-slate-500">{item.description}</p>
           )}
+          {renderDueIndicator()}
           {item.tags && item.tags.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {item.tags.map((tag) => (
